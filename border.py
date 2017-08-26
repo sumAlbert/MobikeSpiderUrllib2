@@ -5,13 +5,16 @@ import gzip
 import StringIO
 import urllib2
 
+import MySQLdb
+
+
 def link():
-    offset = 0.002
-    start = 121.966
-    for num in xrange(0,15):
-        lng=(start+num*offset)
-        with open('./border.txt','a') as fp:
-            fp.write("new BMap.Point("+str(lng)+",31.113),\n")
+    db=MySQLdb.connect(host='localhost',user='root',passwd='123aaaaaa',db='ofo')
+    cursor=db.cursor()
+    sql='SELECT save_time FROM ofo.putuo_mobike_address3 where flag=\'170825_1\' group by save_time'
+    cursor.execute(sql)
+    for row in cursor.fetchall():
+        print "\""+str(row[0])+"\","
 
 if __name__ == '__main__':
     link()
