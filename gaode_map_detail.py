@@ -14,6 +14,7 @@ COUNT = 0
 proxies = [
 ]
 time_lock='false'
+stop_lock='false'
 threading_lock=threading.Lock()
 
 class MyThread(threading.Thread):
@@ -94,7 +95,7 @@ def spider(lon,lat,num):
             db = MySQLdb.connect(host='localhost', passwd='123aaaaaa', user='root', db='ofo', charset='utf8')
             for item in items:
                 cursor = db.cursor()
-                sql = "insert into putuo_mobike_address2 (distX,distY,bikeIds,source,save_time,flag) values (%s,%s,%s,%s,%s,'test') on duplicate key update distY = %s"
+                sql = "insert into putuo_mobike_address3 (distX,distY,bikeIds,source,save_time,flag) values (%s,%s,%s,%s,%s,'170825_1') on duplicate key update distY = %s"
                 param = (str(item['x']), str(item['y']),str(item['id']),str(item['source']),str(SAVE_TIME),str(item['y']))
                 cursor.execute(sql, param)
                 db.commit()
@@ -102,6 +103,7 @@ def spider(lon,lat,num):
         else:
             pass
     except Exception as ex:
+        print str(Exception)
         print ex.message
         if(num>0):
             print ("again")
@@ -133,15 +135,22 @@ def getProxy():
     }
     request=urllib2.Request(url,headers=headers)
     proxy_text=urllib2.urlopen(request)
-    proxies=proxy_text.read().split('|')
+    proxies_temp=proxy_text.read().split('|')
+    for proxy in proxies:
+        proxies_temp.append(proxy)
+    proxies=proxies_temp
 def time_start_lock():
     global time_lock
     time_lock='true'
-    time.sleep(300)
+    time.sleep(180)
     time_lock='false'
+def time_stop_lock():
+    global stop_lock
+    time.sleep(3660)
+    stop_lock='true'
 
 if __name__ == '__main__':
-    SAVE_TIME = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    thread.start_new_thread(time_stop_lock, ())
     address()
     threads_1=[]
     threads_2=[]
@@ -151,6 +160,7 @@ if __name__ == '__main__':
     threads_6=[]
     try:
         while 1:
+            SAVE_TIME = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
             thread.start_new_thread(time_start_lock ,())
             COUNT=0
             getProxy()
@@ -158,12 +168,12 @@ if __name__ == '__main__':
                 start_num = num * 41
                 stop_num = num * 41 + 41
                 myThread = MyThread(start_num, stop_num)
-                if num < 128:
+                if num < 43:
                     threads_1.append(myThread)
-                # elif num < 109:
-                #     threads_2.append(myThread)
-                # elif num < 110:
-                #     threads_3.append(myThread)
+                elif num < 86:
+                    threads_2.append(myThread)
+                elif num < 128:
+                    threads_3.append(myThread)
                 # elif num < 111:
                 #     threads_4.append(myThread)
                 # elif num < 122:
@@ -176,24 +186,25 @@ if __name__ == '__main__':
                 t.join()
             while len(threads_1)!=0:
                 threads_1.pop()
+            time.sleep(1)
+            getProxy()
+            print len(proxies)
+            for t in threads_2:
+                t.start()
+            for t in threads_2:
+                t.join()
+            while len(threads_2)!=0:
+                threads_2.pop()
+            time.sleep(1)
+            getProxy()
+            for t in threads_3:
+                t.start()
+            for t in threads_3:
+                t.join()
+            while len(threads_3)!=0:
+                threads_3.pop()
             localtime = time.asctime(time.localtime(time.time()))
             print "本地时间为 :", localtime
-            # time.sleep(2)
-            # getProxy()
-            # for t in threads_2:
-            #     t.start()
-            # for t in threads_2:
-            #     t.join()
-            # while len(threads_2)!=0:
-            #     threads_2.pop()
-            # time.sleep(2)
-            # getProxy()
-            # for t in threads_3:
-            #     t.start()
-            # for t in threads_3:
-            #     t.join()
-            # while len(threads_3)!=0:
-            #     threads_3.pop()
             # time.sleep(2)
             # getProxy()
             # for t in threads_4:
@@ -222,6 +233,8 @@ if __name__ == '__main__':
                 print (time_lock=='false')
                 if time_lock=='false':
                     break
+            if stop_lock=='true':
+                break
             pass
     except Exception as ex:
         print ex.message
