@@ -52,11 +52,11 @@ def address():
     for row in cursor.fetchall():
         BOTTOM_X.append(row[0])
         BOTTOM_Y.append(row[1])
-    interval = Decimal(0.0002)
+    interval = Decimal(0.0001)
     for single_lng in xrange(0,len(BOTTOM_X)):
         bottom_lat=BOTTOM_Y[single_lng]
         upper_lat=UPPER_Y[single_lng]
-        for i in xrange(0,5):
+        for i in xrange(0,10):
             cursorx=BOTTOM_X[single_lng]+interval*i
             cursory=bottom_lat
             while cursory<=upper_lat:
@@ -122,7 +122,7 @@ def spider(lon,lat,num):
         db = MySQLdb.connect(host='localhost', passwd='123aaaaaa', user='root', db='ofo', charset='utf8')
         for item in items:
             cursor = db.cursor()
-            sql = "insert into putuo_mobike_address3 (distX,distY,bikeIds,source,save_time,flag) values (%s,%s,%s,'ofo',%s,'170827_5') on duplicate key update distY = %s"
+            sql = "insert into putuo_mobike_address3 (distX,distY,bikeIds,source,save_time,flag) values (%s,%s,%s,'ofo',%s,'170827_6') on duplicate key update distY = %s"
             param = (str(item['longitude']), str(item['latitude']),str(item['bicycleNo']),str(SAVE_TIME),str(item['latitude']))
             cursor.execute(sql, param)
             db.commit()
