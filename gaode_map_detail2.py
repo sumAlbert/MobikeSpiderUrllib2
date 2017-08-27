@@ -49,7 +49,7 @@ def address():
     for row in cursor.fetchall():
         BOTTOM_X.append(row[0])
         BOTTOM_Y.append(row[1])
-    interval = Decimal(0.0002)
+    interval = Decimal(0.001)
     for single_lng in xrange(0,len(BOTTOM_X)):
         bottom_lat=BOTTOM_Y[single_lng]
         upper_lat=UPPER_Y[single_lng]
@@ -91,6 +91,7 @@ def spider(lon,lat,num):
     try:
         html=opener.open(request,timeout=2)
         info=html.read()
+        print info
         info_out=info
         info=json.loads(info)
         bicycle = info['bicycle']
@@ -100,18 +101,18 @@ def spider(lon,lat,num):
             items = bicycles['item']
             threading_lock.acquire()
             COUNT = COUNT + 1
-            print COUNT
+            # print COUNT
             threading_lock.release()
             db = MySQLdb.connect(host='localhost', passwd='123aaaaaa', user='root', db='ofo', charset='utf8')
             for item in items:
                 cursor = db.cursor()
-                sql = "insert into putuo_mobike_address4 (distX,distY,bikeIds,source,save_time,flag) values (%s,%s,%s,%s,%s,'170826_2') on duplicate key update distY = %s"
+                sql = "insert into putuo_mobike_address4 (distX,distY,bikeIds,source,save_time,flag) values (%s,%s,%s,%s,%s,'170826_4') on duplicate key update distY = %s"
                 param = (str(item['x']), str(item['y']),str(item['id']),str(item['source']),str(SAVE_TIME),str(item['y']))
                 cursor.execute(sql, param)
                 db.commit()
             db.close()
     except Exception as ex:
-        print ("again")
+        # print ("again")
         if(num>0):
             num=num-1
             if len(proxies)>3:
