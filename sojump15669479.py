@@ -12,14 +12,14 @@ from decimal import Decimal
 import MySQLdb
 import time
 import thread
-
+threading_lock=threading.Lock()
 proxies = []
 
 def spider():
     global proxies
     random_proxy = random.choice(proxies)
-    # proxy_support = urllib2.ProxyHandler({"https": random_proxy})
-    proxy_support = urllib2.ProxyHandler({})
+    proxy_support = urllib2.ProxyHandler({"https": random_proxy})
+    # proxy_support = urllib2.ProxyHandler({})
     url='https://sojump.com/m/15669479.aspx'
     cookie = cookielib.CookieJar()
     handler = urllib2.HTTPCookieProcessor(cookie)
@@ -41,7 +41,7 @@ def spider():
         for item in cookie:
             print 'name:' + item.name + '-value:' + item.value
             pw=item.value
-        url2 ='https://sojump.com/handler/processjq.ashx?curid=15669479&starttime=2017%2F9%2F6%20'+str(time.strftime("%H"))+'%3A'+'00'+'%3A'+'00'+'&source=directphone&submittype=1&rn=3029770955.'+pw+'&iwx=1&t='+str(int(round(time.time() * 1000)))
+        url2 ='https://sojump.com/handler/processjq.ashx?curid=15669479&starttime=2017%2F9%2F6%20'+str(time.strftime("%H"))+'%3A'+'02'+'%3A'+'00'+'&source=directphone&submittype=1&rn=3029770955.'+pw+'&iwx=1&t='+str(int(round(time.time() * 1000)))
         print url2
         headers2 = {
             'Host': 'sojump.com',
@@ -56,24 +56,34 @@ def spider():
             'Referer': 'https://sojump.com/m/15669479.aspx',
             'Cookie': 'UM_distinctid=15e510ea84a380-08e4da64f8c5ae8-370d466d-2c600-15e510ea84c33d; CNZZDATA4478442=cnzz_eid%3D855102626-1504593355-%26ntime%3D1504620355; jac15669479='+pw+'; LastActivityJoin=15669479,101006819862; join_15669479=1; award_15669479=1; jaward101006962742=1; .ASPXANONYMOUS=QBc--K5c0wEkAAAAMWE4NTQ0YzYtYWFiNS00OGZjLTgzOTgtMDUyZDNlMThjOGMwfdumwlqXDF3tcreIoGP7oJjZLcc1'
         }
-        values={"submitdata":"1$1}2$1}3$1}4$1}5$1}6$1}7$1}8$5}9$5}10$1}11$1}12$1}13$10}14$1<5,2<5,3<5,4<5,5<5,6<5"}
+        # values={"submitdata":"1$1}2$1}3$1}4$1}5$1}6$1}7$1}8$5}9$5}10$1}11$1}12$1}13$10}14$1<5,2<5,3<5,4<5,5<5,6<5"}
+        values = {"submitdata": str(getAnswers())}
         data = urllib.urlencode(values)
-        # proxy_support2 = urllib2.ProxyHandler({"https": random_proxy})
-        proxy_support2 = urllib2.ProxyHandler({})
+        proxy_support2 = urllib2.ProxyHandler({"https": random_proxy})
+        # proxy_support2 = urllib2.ProxyHandler({})
         opener2 = urllib2.build_opener(proxy_support2)
         request2 = urllib2.Request(url2, headers=headers2,data=data)
         html=opener2.open(request2,timeout=10)
         info=html.read()
         infoout=info
         print infoout
+        if infoout=='7〒您输入的验证码有误，请重新输入！':
+            threading_lock.acquire()
+            if proxies.count(random_proxy) > 0:
+                proxies.remove(random_proxy)
+            threading_lock.release()
         time.sleep(5)
         spider()
     except Exception as ex:
         print ex.message
         traceback.print_exc()
+        threading_lock.acquire()
         if proxies.count(random_proxy)>0:
             proxies.remove(random_proxy)
         print len(proxies)
+        if(len(proxies)<20):
+            getProxy()
+        threading_lock.release()
         spider()
 
 def getProxy():
@@ -97,17 +107,17 @@ def getProxy():
     proxies=proxies_temp
 def getAnswers():
     result=''
-    for num in xrange(1,15):
+    for num in xrange(1,13):
         if num!=14:
             result=result+str(num)+'$'+getAnswer(num)+'}'
         else:
             result=result+str(num)+'$'+getAnswer(num)
+    result=result+'13$10}14$1<5,2<5,3<5,4<5,5<5,6<5'
     return result
     pass
 
 def getAnswer(num):
     dataAnswer=random.randint(1,1000)
-    print dataAnswer
     if num==1:
         if dataAnswer<477:
             return str(1)
@@ -235,11 +245,226 @@ def getAnswer(num):
             return str(5)
         else:
             return str(6)
+    elif num == 8:
+        if dataAnswer < 100:
+            return str(1)
+        elif dataAnswer < 330:
+            return str(2)
+        elif dataAnswer < 670:
+            return str(3)
+        elif dataAnswer < 900:
+            return str(4)
+        else:
+            return str(5)
+    elif num == 9:
+        if dataAnswer < 100:
+            return str(1)
+        elif dataAnswer < 330:
+            return str(2)
+        elif dataAnswer < 670:
+            return str(3)
+        elif dataAnswer < 900:
+            return str(4)
+        else:
+            return str(5)
+    elif num == 10:
+        dataAnswer = random.randint(1, 1000)
+        result = ''
+        flag = 0
+        if dataAnswer < 572:
+            flag = flag + 1
+            result = result + str(1)
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 551:
+            if flag != 0:
+                result = result + '|' + str(2)
+            else:
+                result = result + str(2)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 321:
+            if flag != 0:
+                result = result + '|' + str(3)
+            else:
+                result = result + str(3)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 245:
+            if flag != 0:
+                result = result + '|' + str(4)
+            else:
+                result = result + str(4)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 258:
+            if flag != 0:
+                result = result + '|' + str(5)
+            else:
+                result = result + str(5)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 286:
+            if flag != 0:
+                result = result + '|' + str(6)
+            else:
+                result = result + str(6)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 381:
+            if flag != 0:
+                result = result + '|' + str(7)
+            else:
+                result = result + str(7)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 100:
+            if flag != 0:
+                result = result + '|' + str(8)
+            else:
+                result = result + str(8)
+            flag = flag + 1
+        if result == '':
+            result = str(1)
+        return result
+    elif num == 11:
+        dataAnswer = random.randint(1, 1000)
+        result = ''
+        flag = 0
+        if dataAnswer < 672:
+            flag = flag + 1
+            result = result + str(1)
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 551:
+            if flag != 0:
+                result = result + '|' + str(2)
+            else:
+                result = result + str(2)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 221:
+            if flag != 0:
+                result = result + '|' + str(3)
+            else:
+                result = result + str(3)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 245:
+            if flag != 0:
+                result = result + '|' + str(4)
+            else:
+                result = result + str(4)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 258:
+            if flag != 0:
+                result = result + '|' + str(5)
+            else:
+                result = result + str(5)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 386:
+            if flag != 0:
+                result = result + '|' + str(6)
+            else:
+                result = result + str(6)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 181:
+            if flag != 0:
+                result = result + '|' + str(7)
+            else:
+                result = result + str(7)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 80:
+            if flag != 0:
+                result = result + '|' + str(8)
+            else:
+                result = result + str(8)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 40:
+            if flag != 0:
+                result = result + '|' + str(9)
+            else:
+                result = result + str(9)
+            flag = flag + 1
+        if result == '':
+            result = str(1)
+        return result
+    elif num == 12:
+        dataAnswer = random.randint(1, 1000)
+        result = ''
+        flag = 0
+        if dataAnswer < 232:
+            flag = flag + 1
+            result = result + str(1)
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 71:
+            if flag != 0:
+                result = result + '|' + str(2)
+            else:
+                result = result + str(2)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 231:
+            if flag != 0:
+                result = result + '|' + str(3)
+            else:
+                result = result + str(3)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 245:
+            if flag != 0:
+                result = result + '|' + str(4)
+            else:
+                result = result + str(4)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 458:
+            if flag != 0:
+                result = result + '|' + str(5)
+            else:
+                result = result + str(5)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 386:
+            if flag != 0:
+                result = result + '|' + str(6)
+            else:
+                result = result + str(6)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 481:
+            if flag != 0:
+                result = result + '|' + str(7)
+            else:
+                result = result + str(7)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 80:
+            if flag != 0:
+                result = result + '|' + str(8)
+            else:
+                result = result + str(8)
+            flag = flag + 1
+        dataAnswer = random.randint(1, 1000)
+        if dataAnswer < 40:
+            if flag != 0:
+                result = result + '|' + str(9)
+            else:
+                result = result + str(9)
+            flag = flag + 1
+        if result == '':
+            result = str(7)
+        return result
     else:
         return ''
 
 if __name__ == '__main__':
-    # getProxy()
-    # spider()
-    print getAnswers()
+    getProxy()
+    for num in xrange(0,25):
+        thread.start_new_thread(spider,())
+    time.sleep(3600)
+    # print str(getAnswers())
     pass
