@@ -42,21 +42,21 @@ def address():
     global DISTY
     db = MySQLdb.connect(host='localhost',passwd='123aaaaaa',user='root',db='ofo',charset='utf8')
     cursor = db.cursor()
-    sql = 'SELECT * FROM putuo_upper_border_view'
+    sql = 'SELECT * FROM lujiazui_upper_border_view'
     cursor.execute(sql)
     for row in cursor.fetchall():
         UPPER_X.append(row[0])
         UPPER_Y.append(row[1])
-    sql = 'SELECT * FROM putuo_bottom_border_view'
+    sql = 'SELECT * FROM lujiazui_bottom_border_view'
     cursor.execute(sql)
     for row in cursor.fetchall():
         BOTTOM_X.append(row[0])
         BOTTOM_Y.append(row[1])
-    interval = Decimal(0.0001)
+    interval = Decimal(0.0005)
     for single_lng in xrange(0,len(BOTTOM_X)):
         bottom_lat=BOTTOM_Y[single_lng]
         upper_lat=UPPER_Y[single_lng]
-        for i in xrange(0,10):
+        for i in xrange(0,2):
             cursorx=BOTTOM_X[single_lng]+interval*i
             cursory=bottom_lat
             while cursory<=upper_lat:
@@ -68,11 +68,11 @@ def address():
 def time_start_lock():
     global time_lock
     time_lock='true'
-    time.sleep(1)
+    time.sleep(1800)
     time_lock='false'
 def time_stop_lock():
     global stop_lock
-    time.sleep(1)
+    time.sleep(86600)
     stop_lock='true'
 def link(bottom,upper):
     global DISTY
@@ -117,18 +117,20 @@ def spider(lon,lat,num):
         threading_lock.acquire()
         COUNT = COUNT + 1
         print COUNT
-        print infoout
+        # print infoout
         threading_lock.release()
         db = MySQLdb.connect(host='localhost', passwd='123aaaaaa', user='root', db='ofo', charset='utf8')
         for item in items:
             cursor = db.cursor()
-            sql = "insert into putuo_mobike_address3 (distX,distY,bikeIds,source,save_time,flag) values (%s,%s,%s,'ofo',%s,'170827_6') on duplicate key update distY = %s"
+            sql = "insert into putuo_mobike_address5 (distX,distY,bikeIds,source,save_time,flag) values (%s,%s,%s,'ofo',%s,'170830_2') on duplicate key update distY = %s"
             param = (str(item['longitude']), str(item['latitude']),str(item['bicycleNo']),str(SAVE_TIME),str(item['latitude']))
             cursor.execute(sql, param)
             db.commit()
         db.close()
     except Exception as ex:
-        print ("again")
+        print ex.message
+        traceback.print_exc()
+        print "again"
         if(num>0):
             num=num-1
             if len(proxies)>3:
@@ -151,12 +153,17 @@ def getProxy():
         'Upgrade - Insecure - Requests':'1',
         'User - Agent':'Mozilla / 5.0(Windows NT 10.0; WOW64) AppleWebKit / 537.36(KHTML, like Gecko) Chrome / 60.0.3112.101 Safari / 537.36'
     }
-    request=urllib2.Request(url,headers=headers)
-    proxy_text=urllib2.urlopen(request)
-    proxies_temp=proxy_text.read().split('|')
-    for proxy in proxies:
-        proxies_temp.append(proxy)
-    proxies=proxies_temp
+    try:
+        request=urllib2.Request(url,headers=headers)
+        proxy_text=urllib2.urlopen(request)
+        proxies_temp=proxy_text.read().split('|')
+        # for proxy in proxies:
+        #     proxies_temp.append(proxy)
+        proxies=proxies_temp
+        print len(proxies)
+    except Exception as ex:
+        print ex.message
+        traceback.print_exc()
 
 if __name__ == '__main__':
     address()
@@ -169,7 +176,7 @@ if __name__ == '__main__':
         while 1:
             SAVE_TIME = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
             thread.start_new_thread(time_start_lock ,())
-            for threadCount in xrange(0,48):
+            for threadCount in xrange(0,3):
                 start_thread=threadCount*3000
                 for num in xrange(0,60):
                     start_num=start_thread+num*50
@@ -183,7 +190,6 @@ if __name__ == '__main__':
                 while len(threads_1) != 0:
                     threads_1.pop()
                 print ("number of proxies saved:")
-                print len(proxies)
                 print ("Now sleep 5s...")
                 time.sleep(5)
                 getProxy()
